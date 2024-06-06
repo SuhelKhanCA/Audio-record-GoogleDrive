@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Recorder</title>
+    <style>
+        #loading {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Voice Recorder</h1>
+    <div>
+        <label for="userName">Enter your name:</label>
+        <input type="text" id="userName">
+    </div>
+    <h2>English Text</h2>
+    <p id="englishText">{{ english_text }}</p>
+    <button id="recordButtonEnglish">Record English</button>
+    <button id="stopButtonEnglish" disabled>Stop</button>
+    <button id="listenButtonEnglish" disabled>Listen</button>
+    <audio id="audioEnglish" controls style="display:none;"></audio>
+    
+    <h2>Hindi Text</h2>
+    <p id="hindiText">{{ hindi_text }}</p>
+    <button id="recordButtonHindi">Record Hindi</button>
+    <button id="stopButtonHindi" disabled>Stop</button>
+    <button id="listenButtonHindi" disabled>Listen</button>
+    <audio id="audioHindi" controls style="display:none;"></audio>
+    
+    <button id="submitButton" disabled>Submit</button>
+    <button id="resetButton">Reset</button>
+    <p id="status"></p>
+
+    <div id="loading">Uploading...</div>
+
+    <script>
+        let mediaRecorderEnglish;
+        let audioChunksEnglish = [];
+        let mediaRecorderHindi;
+        let audioChunksHindi = [];
+
+        const userName = document.getElementById('userName');
+        const recordButtonEnglish = document.getElementById('recordButtonEnglish');
+        const stopButtonEnglish = document.getElementById('stopButtonEnglish');
+        const listenButtonEnglish = document.getElementById('listenButtonEnglish');
+        const audioEnglish = document.getElementById('audioEnglish');
+
+        const recordButtonHindi = document.getElementById('recordButtonHindi');
+        const stopButtonHindi = document.getElementById('stopButtonHindi');
+        const listenButtonHindi = document.getElementById('listenButtonHindi');
+        const audioHindi = document.getElementById('audioHindi');
+
+        const submitButton = document.getElementById('submitButton');
+        const resetButton = document.getElementById('resetButton');
+        const status = document.getElementById('status');
+        const loading = document.getElementById('loading');
+
+        // Enable the submit button only when both recordings are available
+        const enableSubmitButton = () => {
+            submitButton.disabled = !(audioChunksEnglish.length && audioChunksHindi.length && userName.value);
+        };
+
+        // English Audio Recording
+        recordButtonEnglish.addEventListener('click', async () => {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorderEnglish = new MediaRecorder(stream);
+
+                mediaRecorderEnglish.ondataavailable = event => {
+                    audioChunksEnglish.push(event.data);
+                };
+
+                mediaRecorderEnglish.onstop = () => {
+                    const audioBlob = new Blob(audioChunksEnglish, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioEnglish.src = audioUrl;
+                    audioEnglish.style.display = 'block';
+                    listenButtonEnglish.disabled = false;
+                    enableSubmitButton();
+                };
+
+                mediaRecorderEnglish.start();
+                recordButtonEnglish.disabled = true;
+                stopButtonEnglish.disabled = false;
+                status.textContent = 'Recording English...';
+            }
+        });
+
+        stopButtonEnglish.addEventListener('click', () => {
+            mediaRecorderEnglish.stop();
+            recordButtonEnglish.disabled = false;
+            stopButtonEnglish.disabled = true;
+            status.textContent = 'English recording stopped.';
+        });
+
+        listenButtonEnglish.addEventListener('click', () => {
+            audioEnglish.play();
+        });
+
+        // Hindi Audio Recording
+        recordButtonHindi.addEventListener('click', async () => {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorderHindi = new MediaRecorder(stream);
+
+                mediaRecorderHindi.ondataavailable = event => {
+                    audioChunksHindi.push(event.data);
+                };
+
+                mediaRecorderHindi.onstop = () => {
+                    const audioBlob = new Blob(audioChunksHindi, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioHindi.src = audioUrl;
+                    audioHindi.style.display = 'block';
+                    listenButtonHindi.disabled = false;
+                    enableSubmitButton();
+                };
+
+                mediaRecorderHindi.start();
+                recordButtonHindi.disabled = true;
+                stopButtonHindi.disabled = false;
+                status.textContent = 'Recording Hindi...';
+            }
+        });
+
+        stopButtonHindi.addEventListener('click', () => {
+            mediaRecorderHindi.stop();
+            recordButtonHindi.disabled = false;
+            stopButtonHindi.disabled = true;
+            status.textContent = 'Hindi recording stopped.';
+        });
+
+        listenButtonHindi.addEventListener('click', () => {
+            audioHindi.play();
+        });
+
+        // Submit both recordings
+        submitButton.addEventListener('click', async () => {
+            loading.style.display = 'block';
+            const audioBlobEnglish = new Blob(audioChunksEnglish, { type: 'audio/wav' });
+            const audioBlobHindi = new Blob(audioChunksHindi, { type: 'audio/wav' });
+            const formData = new FormData();
+            formData.append('user_name', userName.value);
+            formData.append('text_id', '{{ text_id }}');
+            formData.append('audio_data_english', audioBlobEnglish, 'recording_english.wav');
+            formData.append('audio_data_hindi', audioBlobHindi, 'recording_hindi.wav');
+
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            status.textContent = result.message;
+            loading.style.display = 'none';
+            if (result.status === "success") {
+                resetForm();
+            }
+        });
+
+        // Reset the form
+        resetButton.addEventListener('click', () => {
+            resetForm();
+            status.textContent = '';
+        });
+
+        function resetForm() {
+            audioChunksEnglish = [];
+            audioChunksHindi = [];
+            audioEnglish.src = '';
+            audioHindi.src = '';
+            audioEnglish.style.display = 'none';
+            audioHindi.style.display = 'none';
+            listenButtonEnglish.disabled = true;
+            listenButtonHindi.disabled = true;
+            submitButton.disabled = true;
+            recordButtonEnglish.disabled = false;
+            recordButtonHindi.disabled = false;
+            userName.value = '';
+        }
+
+        // Enable submit button if user name is entered
+        userName.addEventListener('input', enableSubmitButton);
+    </script>
+</body>
+</html>
