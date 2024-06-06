@@ -21,29 +21,42 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Voice Recorder</h1>
+    <header >
+        <div>
+            <h1>Voice Recording</h1>
+        <p>Your contribution matters</p>
+        </div>
+      </header>
     <div>
-        <label for="userName">Enter your name:</label>
+        <label for="userName" >Enter your name</label>
         <input type="text" id="userName">
     </div>
-    <h2>English Text</h2>
-    <p id="englishText">{{ english_text }}</p>
-    <button id="recordButtonEnglish">Record English</button>
-    <button id="stopButtonEnglish" disabled>Stop</button>
-    <button id="listenButtonEnglish" disabled>Listen</button>
-    <audio id="audioEnglish" controls style="display:none;"></audio>
     
-    <h2>Hindi Text</h2>
-    <p id="hindiText">{{ hindi_text }}</p>
-    <button id="recordButtonHindi">Record Hindi</button>
-    <button id="stopButtonHindi" disabled>Stop</button>
-    <button id="listenButtonHindi" disabled>Listen</button>
-    <audio id="audioHindi" controls style="display:none;"></audio>
+    <div class="text">
+        <div id="eng-txt">
+            <h2>English Text</h2>
+        <p id="englishText">{{ english_text }}</p>
+        <button id="recordButtonEnglish">Record English</button>
+        <button id="stopButtonEnglish" disabled>Stop</button>
+        <button id="listenButtonEnglish" disabled>Listen</button>
+        <audio id="audioEnglish" controls style="display:none;"></audio>
+        </div>
+        
+        <div id="hin-txt">
+            <h2>Hindi Text</h2>
+        <p id="hindiText">{{ hindi_text }}</p>
+        <button id="recordButtonHindi">Record Hindi</button>
+        <button id="stopButtonHindi" disabled>Stop</button>
+        <button id="listenButtonHindi" disabled>Listen</button>
+        <audio id="audioHindi" controls style="display:none;"></audio>
+        </div>
+    </div>
     
-    <button id="submitButton" disabled>Submit</button>
-    <button id="resetButton">Reset</button>
+    <div id="submit-reset">
+        <button id="submitButton" disabled>Submit</button>
+        <button id="resetButton">Reset</button>
+    </div>
     <p id="status"></p>
-
     <div id="loading">Uploading...</div>
 
     <script>
