@@ -1,5 +1,7 @@
 # Dr-Recorder 
     LINK : https://dr-recorder.onrender.com/
+## This project was completed in the another Repo. 
+    LINK : https://github.com/SuhelKhanCA/Dr-Recorder
 
 ## Home Page
 ![image](https://github.com/SuhelKhanCA/Dr-Recorder/assets/112371384/57a2a312-f163-48b3-ad80-ff808668976a)
